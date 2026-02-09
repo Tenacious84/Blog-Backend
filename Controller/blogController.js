@@ -3,7 +3,7 @@ const uploadToCloudinary = require('../Utility/uploadToCloudinary')
 
 const getAllBlogs = async (req, res) => {
 
-    const blogs = await Blog.find()
+    const blogs = await Blog.find().populate('author', 'author')
 
     if (!blogs) return res.status(404).json('No blogs found!')
 
@@ -11,10 +11,13 @@ const getAllBlogs = async (req, res) => {
 }
 
 const getBlog = async (req, res) => {
-    const { id } = req.params.id
-    const blog = await Blog.findById(id)
+    const { id } = req.params
 
-    if (!blog) return res.status(404).json('Blog not found!')
+    const blog = await Blog
+        .findById(id)
+        .populate('author', 'author')
+
+    if (!blog) return res.status(400).json('Blog not found!')
 
     res.status(200).json(blog)
 }
@@ -48,7 +51,7 @@ const createBlog = async (req, res) => {
 }
 
 const getMyBlogs = async (req, res) => {
-    const myBlogs = await Blog.find({ user: req.user._id })
+    const myBlogs = await Blog.find({ user: req.user }).populate('author', 'author')
 
     if (!myBlogs) return res.status(404).json("No blogs found!")
 
@@ -56,9 +59,9 @@ const getMyBlogs = async (req, res) => {
 }
 
 const updateBlog = async (req, res) => {
-    const { id } = req.params._id
+    const { id } = req.params
 
-    const blog = await Blog.findById({ id })
+    const blog = await Blog.findById(id)
     if (!blog) return res.status(404).json('Blog not found!')
 
 
@@ -70,7 +73,7 @@ const updateBlog = async (req, res) => {
 const deleteBlog = async (req, res) => {
     const { id } = req.params
 
-    const blog = await Blog.findByIdAndDelete({ id })
+    const blog = await Blog.findByIdAndDelete(id)
     if (!blog) return res.status(404).json('Blog not found!')
 
     res.status(200).json('Blog has been successfully deleted!')
