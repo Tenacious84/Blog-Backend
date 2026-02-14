@@ -38,7 +38,12 @@ const registerUser = async (req, res) => {
                 role: user.role
 
             },
-            token: generateToken(user._id, user.role)
+            // ✅ CRITICAL FIX: Convert ObjectId to string
+            token: generateToken({
+                id: user._id.toString(),
+                role: user.role
+            })
+
 
         });
     } catch (error) {
@@ -81,7 +86,7 @@ const loginUser = async (req, res) => {
                 role: user.role
 
             },
-            token: generateToken(user._id, user.role)
+            token: generateToken(user._id.toString(), user.role)
         })
         res.status(200).json({
             message: `Welcome ${user.author}`,
@@ -92,7 +97,11 @@ const loginUser = async (req, res) => {
                 role: user.role
 
             },
-            token: generateToken(user._id, user.role)
+            // ✅ CRITICAL FIX: Convert ObjectId to string
+            token: generateToken({
+                id: user._id.toString(),
+                role: user.role
+            })
 
         });
     }
@@ -103,4 +112,3 @@ const loginUser = async (req, res) => {
 
 
 module.exports = { registerUser, loginUser };
-

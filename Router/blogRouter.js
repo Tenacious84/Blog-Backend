@@ -7,8 +7,9 @@ const router = express.Router()
 
 
 router.get('/', getAllBlogs)
-router.get('/:id', getBlog)
 router.get('/myBlogs', protect, getMyBlogs)
+router.get('/:id', getBlog)
+
 
 router.post('/createBlog', (req, res, next) => {
     console.log('🚀 BLOG ROUTE HIT')

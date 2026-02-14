@@ -3,7 +3,7 @@ const uploadToCloudinary = require('../Utility/uploadToCloudinary')
 
 const getAllBlogs = async (req, res) => {
 
-    const blogs = await Blog.find().populate('author', 'author')
+    const blogs = await Blog.find().populate('author', 'author _id').sort({ createdAt: -1 })
 
     if (!blogs) return res.status(404).json('No blogs found!')
 
@@ -15,7 +15,7 @@ const getBlog = async (req, res) => {
 
     const blog = await Blog
         .findById(id)
-        .populate('author', 'author')
+        .populate('author', 'author _id')
 
     if (!blog) return res.status(400).json('Blog not found!')
 
@@ -51,7 +51,8 @@ const createBlog = async (req, res) => {
 }
 
 const getMyBlogs = async (req, res) => {
-    const myBlogs = await Blog.find({ user: req.user }).populate('author', 'author')
+    // ✅ Fixed: Changed 'user' to 'author' to match the schema field name
+    const myBlogs = await Blog.find({ author: req.user }).populate('author', 'author _id').sort({ createdAt: -1 })
 
     if (!myBlogs) return res.status(404).json("No blogs found!")
 
@@ -59,15 +60,24 @@ const getMyBlogs = async (req, res) => {
 }
 
 const updateBlog = async (req, res) => {
-    const { id } = req.params
+    try {
+        const { title, content } = req.body
 
-    const blog = await Blog.findById(id)
-    if (!blog) return res.status(404).json('Blog not found!')
+        const blog = await Blog.findOneAndUpdate(
+            { _id: req.params.id, user: req.user },
+            { title, subtitle, content, image },
+            { new: true }
+        )
 
+        if (!blog) {
+            return res.status(404).json({ message: "Blog not found or not authorized" })
+        }
 
-    Object.assign(blog, req.body)
-    blog.save()
-    res.status(200).json(blog)
+        res.status(200).json(blog)
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error" })
+    }
 }
 
 const deleteBlog = async (req, res) => {

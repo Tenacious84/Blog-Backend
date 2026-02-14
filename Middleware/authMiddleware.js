@@ -1,32 +1,40 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
-
+/**
+ * Protect middleware - Verifies JWT token and attaches user to request
+ */
 const protect = async (req, res, next) => {
-    console.log('🔐 PROTECT HIT, auth header:', req.headers.authorization)
+  let token;
 
-
+  // Check if Authorization header exists and starts with 'Bearer'
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-        const authHeader = req.headers?.authorization
+      // Extract token from header
+      token = req.headers.authorization.split(' ')[1];
 
-        if (!authHeader) return res.status(400).json('Token not found!')
+      console.log('🔐 PROTECT HIT, auth header:', req.headers.authorization);
 
-        const token = authHeader.split(' ')[1]
-        if (!token) return res.status(400).json('Token missing!')
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET)
-        console.log(decoded)
-        req.user = decoded._id
-        console.log('authHeader:', authHeader)
-        console.log('token extracted:', token)
+      console.log('Decoded token:', decoded);
 
+      // ✅ CRITICAL: Set req.user to the user ID from the token
+      req.user = decoded.id;
 
+      console.log('req.user set to:', req.user);
+
+      next();
+    } catch (error) {
+      console.error('Token verification failed:', error.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
-    catch (err) {
-        return res.status(400).json({ message: 'Protection failed', err })
+  }
 
-    }
-    console.log('protection complete😌')
-    next()
-}
+  if (!token) {
+    console.log('🔐 PROTECT HIT, auth header:', req.headers.authorization);
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
+};
 
-module.exports = { protect }
+module.exports = { protect };
