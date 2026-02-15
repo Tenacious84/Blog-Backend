@@ -60,12 +60,13 @@ const getMyBlogs = async (req, res) => {
 }
 
 const updateBlog = async (req, res) => {
+    console.log("UpdateBlog hit")
     try {
-        const { title, content } = req.body
+        const { title, subtitle, content } = req.body
 
         const blog = await Blog.findOneAndUpdate(
-            { _id: req.params.id, user: req.user },
-            { title, subtitle, content, image },
+            { _id: req.params.id, user: req.user.id },
+            { title, subtitle, content },
             { new: true }
         )
 
@@ -74,9 +75,11 @@ const updateBlog = async (req, res) => {
         }
 
         res.status(200).json(blog)
+        console.log(blog)
 
     } catch (error) {
-        res.status(500).json({ message: "Server error" })
+        res.status(500).json({ message: error.message })
+        console.log(error.message)
     }
 }
 
@@ -89,6 +92,36 @@ const deleteBlog = async (req, res) => {
     res.status(200).json('Blog has been successfully deleted!')
 }
 
+const likeBlog = async (req, res) => {
+    const { id } = req.params
+
+    const blog = await Blog.findById(id)
+    if (!blog) return res.status(404).json('Blog not found')
+
+    const userId = req.user.toString()
+    console.log({ 'user': userId })
 
 
-module.exports = { getAllBlogs, getBlog, createBlog, updateBlog, deleteBlog, getMyBlogs }
+
+    if (blog.likes.includes(userId)) {
+
+        blog.likes = blog.likes.filter(like => like && like.toString() !== userId);
+    } else {
+
+        blog.likes.push(userId);
+    }
+
+
+
+    await blog.save()
+
+    console.log({ 'Blog': blog })
+    res.json({
+        likesCount: blog.likes.length,
+        blog: blog,
+        'user': userId
+    });
+}
+
+
+module.exports = { getAllBlogs, getBlog, createBlog, updateBlog, deleteBlog, getMyBlogs, likeBlog }
