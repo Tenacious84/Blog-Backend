@@ -111,8 +111,6 @@ const likeBlog = async (req, res) => {
         blog.likes.push(userId);
     }
 
-
-
     await blog.save()
 
     console.log({ 'Blog': blog })

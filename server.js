@@ -24,6 +24,7 @@ app.use('/api/user', userRouter)
 app.use('/api/blog', blogRouter)
 
 console.log(process.env.CLOUDINARY_API_KEY);
+console.log(process.env.JWT_SECRET)
 
 PORT = process.env.PORT
 
