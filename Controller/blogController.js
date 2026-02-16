@@ -119,7 +119,8 @@ const likeBlog = async (req, res) => {
     res.json({
         likesCount: blog.likes.length,
         blog: blog,
-        'user': userId
+        'user': userId,
+        'likes': blog.likes
     });
 }
 
