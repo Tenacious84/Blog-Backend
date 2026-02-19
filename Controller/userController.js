@@ -2,9 +2,7 @@ const User = require('../Models/userSchema');
 const bcrypt = require('bcrypt');
 const generateToken = require('../Utility/generateJWT')
 
-/* =========================
-REGISTER USER
-========================= */
+
 const registerUser = async (req, res) => {
     try {
         const { author, email, password } = req.body
@@ -13,8 +11,8 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required!' })
         }
 
-        // Check if user already exists
-        const userExists = await User.findOne({ email });
+
+        const userExists = await User.findOne({ email })
 
         if (userExists) {
             return res.status(409).json({
@@ -24,14 +22,13 @@ const registerUser = async (req, res) => {
 
         }
 
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await User.create({
             author,
             email,
             password: hashedPassword
-        });
+        })
 
         res.status(201).json({
             message: 'User created successfully',
@@ -42,23 +39,19 @@ const registerUser = async (req, res) => {
                 role: user.role
 
             },
-            // ✅ CRITICAL FIX: Convert ObjectId to string
+
             token: generateToken({
                 id: user._id.toString(),
                 role: user.role
             })
 
 
-        });
+        })
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message })
     }
-};
+}
 
-
-/* =========================
-LOGIN USER
-========================= */
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body
@@ -67,7 +60,7 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required!' })
         }
 
-       
+
         const user = await User.findOne({ email });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -75,7 +68,7 @@ const loginUser = async (req, res) => {
         }
 
 
-        // Compare password with hashed password
+
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -101,7 +94,7 @@ const loginUser = async (req, res) => {
                 role: user.role
 
             },
-            // ✅ CRITICAL FIX: Convert ObjectId to string
+
             token: generateToken({
                 id: user._id.toString(),
                 role: user.role

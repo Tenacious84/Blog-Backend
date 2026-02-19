@@ -51,7 +51,7 @@ const createBlog = async (req, res) => {
 }
 
 const getMyBlogs = async (req, res) => {
-    // ✅ Fixed: Changed 'user' to 'author' to match the schema field name
+    // Fixed: Changed 'user' to 'author' to match the schema field name
     const myBlogs = await Blog.find({ author: req.user }).populate('author', 'author _id').sort({ createdAt: -1 })
 
     if (!myBlogs) return res.status(404).json("No blogs found!")
